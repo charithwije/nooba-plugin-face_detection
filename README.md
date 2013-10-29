@@ -1,4 +1,4 @@
-nooba-plugin-template
+nooba-plugin-facedetection
 =====================
 
-template plugin for the current Nooba plugin API
+facedetection plugin for the current Nooba plugin API
