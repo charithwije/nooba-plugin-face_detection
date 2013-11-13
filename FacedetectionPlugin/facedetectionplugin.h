@@ -3,6 +3,7 @@
 
 #include "facedetectionplugin_global.h"
 #include "noobapluginapi.h"
+#include "package_bgs/StaticFrameDifferenceBGS.h"
 
 #include <fstream>
 #include <iostream>
@@ -17,6 +18,11 @@
 #include <QString>
 #include <QFile>
 #include <QTextStream>
+#include <QtGui/QImage>
+
+
+
+
 
 class FACEDETECTIONPLUGIN_EXPORT FacedetectionPlugin: public NoobaPluginAPI
 {
@@ -48,16 +54,18 @@ private:
         cv::CascadeClassifier face_cascade;
         cv::CascadeClassifier face_cascade2;
         cv::CascadeClassifier eyes_cascade;
-
-
+        cv::Mat img_mask;
+        cv::Mat mat1 ;
+        StaticFrameDifferenceBGS bgs;
 
       //  QTextStream out;
-
+        QImage img;
 
         int frame_number_local;
         std::string haarFaceCascadePath;
         std::string lbpFaceCascadePath;
         std::string eyeCascadePath;
+        std::string pedestrianCascade;
 
         bool b;
 

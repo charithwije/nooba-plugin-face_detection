@@ -10,6 +10,7 @@
 //QFile file("/home/charith/Programming/FYP/Plugins/out-files/out3.txt");
 
 QFile file(QCoreApplication::applicationDirPath()+"/Detected_face_coordinates.txt");
+QFile file2(QCoreApplication::applicationDirPath()+"/initial_frame.png");
 QTextStream out(&file);
 
 FacedetectionPlugin::FacedetectionPlugin()
@@ -26,16 +27,30 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
 {
 
     frame_number_local++;
+    img_mask = in.clone();
+
+   mat1 = cv::imread("/home/charith/Programming/FYP/Plugins/initialimg2.png",3);
+
     cv::cvtColor(in, out, CV_BGR2GRAY);
+
     //cv::imshow( "face---", out );
 
-    b =face_cascade.load(lbpFaceCascadePath);
+    bgs.process(in,img_mask,mat1);
+
+     //imshow( "img mask", img_mask );
+     //  cv::waitKey(20);
+
+    b =face_cascade.load(haarFaceCascadePath);
 
     if(!b)
     {
         qDebug("--(!)Error loading\n"); return false;
     }
-    //if( !face_cascade2.load(haarFaceCascadePath)){ cout<<"--(!)Error loading\n"; return false; };
+    if( !face_cascade2.load(haarFaceCascadePath))
+    {
+        qDebug("--(!)Error loading\n");
+        return false;
+    }
 
     if( !eyes_cascade.load(eyeCascadePath) )
     {
@@ -49,16 +64,17 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
 
 
     //        //-- Detect faces
-    face_cascade.detectMultiScale(out, faces );
+    //face_cascade.detectMultiScale(out, faces,1.1,3,CV_HAAR_SCALE_IMAGE,cvSize(10,10),cvSize(50,50) );
+    face_cascade.detectMultiScale(out, faces,1.1);
 
-    /*face_cascade2.detectMultiScale( out, faces2, 1.1, 2, CV_HAAR_SCALE_IMAGE, cv::Size(10, 10), cv::Size(40, 40) );
+//    face_cascade2.detectMultiScale( out, faces2, 1.1, 2, CV_HAAR_SCALE_IMAGE, cv::Size(10, 10), cv::Size(40, 40) );
 
-        faces.insert( faces.end(), faces2.begin(), faces2.end() );
+//        faces.insert( faces.end(), faces2.begin(), faces2.end() );
 
 //        std::vector<cv::Rect>::iterator it;
 //        it = std::unique (faces.begin(), faces.end());
 
-//        faces.resize(std::distance(faces.begin(),it) );*/
+//        faces.resize(std::distance(faces.begin(),it) );
 
     for( int i = 0; i < faces.size(); i++ )
     {
@@ -70,12 +86,20 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
 
         cv::rectangle(out,face,cv::Scalar(255,255,51),2);
         cv::Mat faceROI = out(faces[i] );
-        std::vector<cv::Rect> eyes;
+        //std::vector<cv::Rect> eyes;
 
-        // imshow( "face---", faceROI );
-        // cv::waitKey(20);
+         imshow( "face---", faceROI );
+         cv::waitKey(20);
+
+//         IplImage copy=faceROI;
+//        IplImage* savingImg = &copy;
+
+QString s = QString("face_results/face_results%1.png").arg(frame_number_local);
 
 
+cv::imwrite(s.toStdString(),faceROI);
+
+        // cvSaveImage("/home/charith/Programming/FYP/NoobaVSS_build/NoobaFE/Debug/face_results",savingImg);
         //-- In each face, detect eyes
         //eyes_cascade.detectMultiScale( faceROI, eyes, 1.1, 2, 0 |CV_HAAR_SCALE_IMAGE, cv::Size(30, 30) );
 
@@ -101,6 +125,7 @@ bool FacedetectionPlugin::writeToFile(int frameNoLocal, int x, int y, int width,
 {
     try{
         out << frameNoLocal <<","<< x << ","<< y << ","<< width << ","<< height <<"\n";
+        out.flush();
     }
 
     catch(QException e){
@@ -118,9 +143,11 @@ bool FacedetectionPlugin::writeToFile(int frameNoLocal, int x, int y, int width,
 
 bool FacedetectionPlugin::init()
 {
-    haarFaceCascadePath= "/home/charith/Programming/FYP/Plugins/data/haarcascades/haarcascade_frontalface_default.xml";
+    haarFaceCascadePath= "/home/charith/Programming/FYP/Plugins/data/haarcascades/haarcascade_frontalface_alt2.xml";
     lbpFaceCascadePath = "/home/charith/Programming/FYP/Plugins/data/lbpcascades/lbpcascade_frontalface.xml";
     eyeCascadePath = "/home/charith/Programming/FYP/Plugins/data/haarcascades/haarcascade_eye.xml";
+    pedestrianCascade="/home/charith/Programming/FYP/Plugins/data/hogcascades/hogcascadepedestrians.xml";
+
 
     time_t rawtime;
     struct tm * timeinfo;
