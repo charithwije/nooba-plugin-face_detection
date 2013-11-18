@@ -67,7 +67,17 @@ private:
         std::string eyeCascadePath;
         std::string pedestrianCascade;
 
+        QString outputPath;
+        QString outCordinates;
+        QFile file;
+        QTextStream out;
         bool b;
+        bool result;
+
+private slots:
+
+       void onStringParamChanged(const QString& varName, const QString& val);
+
 
 
     /**
