@@ -19,6 +19,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QtGui/QImage>
+#include <QDir>
 
 
 
@@ -61,6 +62,8 @@ private:
       //  QTextStream out;
         QImage img;
 
+        QDir dir;
+        QDir dir2;
         int frame_number_local;
         std::string haarFaceCascadePath;
         std::string lbpFaceCascadePath;
@@ -69,10 +72,23 @@ private:
 
         QString outputPath;
         QString outCordinates;
+        QString imgOutputPropertyName;
+        QString imgOutputValue;
+        QString imgOutCordinatesPropertyName;
+        QString imgOutCordinatesValue;
+        QString imgDir;
+
+        PluginPassData passingData;
+        QStringList passingStringList;
+
+
         QFile file;
         QTextStream out;
         bool b;
         bool result;
+
+        time_t rawtime;
+        struct tm * timeinfo;
 
 private slots:
 
