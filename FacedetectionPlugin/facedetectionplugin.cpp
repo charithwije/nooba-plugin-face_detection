@@ -6,6 +6,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <QDebug>
 #include <QString>
+#include <QFile>
 
 QFile file2(QCoreApplication::applicationDirPath()+"/initial_frame.png");
 
@@ -41,18 +42,19 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
 
     if(!b)
     {
-        qDebug("--(!)Error loading\n"); return false;
-    }
-    if( !face_cascade2.load(haarFaceCascadePath))
-    {
-        qDebug("--(!)Error loading\n");
+        qDebug() << "--(!)Error loading\n" << Q_FUNC_INFO;
         return false;
     }
+//    if( !face_cascade2.load(haarFaceCascadePath))
+//    {
+//        qDebug("--(!)Error loading\n");
+//        return false;
+//    }
 
-    if( !eyes_cascade.load(eyeCascadePath) )
-    {
-        qDebug("--(!)Error loading\n"); return false;
-    }
+//    if( !eyes_cascade.load(eyeCascadePath) )
+//    {
+//        qDebug("--(!)Error loading\n"); return false;
+//    }
 
 
 
@@ -123,10 +125,14 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
     }
 
     passingStringList.append(QString("%1").arg(faces.size()));
+    passingStringList.append(QString("%1").arg(frame_number_local));
     passingData.setStrList(passingStringList);
     //passingData.setImage(out);
     passingStringList.clear();
     outputData(passingData);
+    QImage img((uchar*)out.data, out.cols, out.rows, out.step1(), QImage::Format_RGB888);
+    updateFrameViewer("Output",img);
+
     return true;
 }
 
@@ -150,9 +156,22 @@ bool FacedetectionPlugin::writeToFile(int frameNoLocal, int x, int y, int width,
 
 bool FacedetectionPlugin::init()
 {
+    QDir dir(QDir::home());
+    if(!dir.exists("NoobaVSS")){
+        dir.mkdir("NoobaVSS");
+    }
+    dir.cd("NoobaVSS");
+    if(!dir.exists("config")){
+        dir.mkdir("config");
+    }
+    dir.cd("config");
+
+
     frame_number_local=0;
-    haarFaceCascadePath= "/home/charith/Programming/FYP/Plugins/data/haarcascades/haarcascade_frontalface_alt2.xml";
-    lbpFaceCascadePath = "/home/charith/Programming/FYP/Plugins/data/lbpcascades/lbpcascade_frontalface.xml";
+    haarFaceCascadePath = dir.absoluteFilePath("haarcascade_frontalface_alt2.xml").toStdString();
+    copyFile("://resources/haarcascades/haarcascade_frontalface_alt2.xml", dir.absoluteFilePath("haarcascade_frontalface_alt2.xml"));
+    lbpFaceCascadePath = dir.absoluteFilePath("lbpcascade_frontalface.xml").toStdString();
+    copyFile("://resources/lbpcascades/lbpcascade_frontalface.xml", dir.absoluteFilePath("lbpcascade_frontalface.xml"));
     eyeCascadePath = "/home/charith/Programming/FYP/Plugins/data/haarcascades/haarcascade_eye.xml";
     pedestrianCascade="/home/charith/Programming/FYP/Plugins/data/hogcascades/hogcascadepedestrians.xml";
 
@@ -177,6 +196,8 @@ bool FacedetectionPlugin::init()
 
     out.setDevice(&file);
     out << "%"<<asctime(timeinfo)<<"%======= Face details (Frame number, x, y, width, height)======= \n";
+
+    createFrameViewer("Output");
 
     return true;
 }
@@ -207,6 +228,23 @@ void FacedetectionPlugin::onStringParamChanged(const QString& varName, const QSt
     }
 
 
+}
+
+void FacedetectionPlugin::copyFile(const QString &sourcePath, const QString &destPath)
+{
+    QFile in(sourcePath);
+    if (!in.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    QByteArray b = in.readAll();
+    in.close();
+    QFile out(destPath);
+
+    if (!out.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+
+    out.write(b.data(), qstrlen(b.data()));
+    out.close();
 }
 
 

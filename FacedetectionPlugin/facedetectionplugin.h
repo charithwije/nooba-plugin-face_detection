@@ -104,7 +104,8 @@ private slots:
 //    void onDoubleParamChanged(const QString& varName, double val);
 //    void onStringParamChanged(const QString& varName, const QString& val);
 //    void onMultiValParamChanged(const QString& varName, const QString& val);
-
+private:
+       void copyFile(const QString& sourcePath, const QString& destPath);
 
 };
 
