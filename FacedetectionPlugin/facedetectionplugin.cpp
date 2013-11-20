@@ -175,17 +175,22 @@ bool FacedetectionPlugin::init()
     eyeCascadePath = "/home/charith/Programming/FYP/Plugins/data/haarcascades/haarcascade_eye.xml";
     pedestrianCascade="/home/charith/Programming/FYP/Plugins/data/hogcascades/hogcascadepedestrians.xml";
 
-    imgOutputPropertyName = "output image path";
-    imgOutputValue="face results";
-    imgOutCordinatesPropertyName = "detected face cordinate locations";
-    imgOutCordinatesValue = "face cordinates";
+
+    dir.cd("..");
+    if(!dir.exists("faces")){
+        dir.mkdir("faces");
+    }
+    dir.cd("faces");
+    dir2.mkpath(dir.absolutePath());
+    file.setFileName(dir.absoluteFilePath("faceCoordinates.txt"));
+
+    imgOutputPropertyName = "Detected Face Store";
+    imgOutputValue=dir.absolutePath();
+    imgOutCordinatesPropertyName = "Face Coordinates File";
+    imgOutCordinatesValue = dir.absoluteFilePath("faceCoordinates.txt");
 
     createStringParam(imgOutputPropertyName,imgOutputValue,true);
     createStringParam(imgOutCordinatesPropertyName,imgOutCordinatesValue,true);
-
-    dir2.mkpath(QCoreApplication::applicationDirPath()+"/"+imgOutputValue);
-    file.setFileName(QCoreApplication::applicationDirPath()+"/"+imgOutCordinatesValue);
-
     time_t rawtime;
     struct tm * timeinfo;
 
@@ -206,16 +211,26 @@ void FacedetectionPlugin::onStringParamChanged(const QString& varName, const QSt
 
     //  qDebug("signal came");
 
+    QDir dir(QDir::home());
+    if(!dir.exists("NoobaVSS")){
+        dir.mkdir("NoobaVSS");
+    }
+    dir.cd("NoobaVSS");
+    if(!dir.exists("faces")){
+        dir.mkdir("faces");
+    }
+    dir.cd("faces");
+
     if (varName.compare(imgOutputPropertyName) == 0) {
         imgOutputValue=val;
-        dir.mkpath(QCoreApplication::applicationDirPath()+"/"+imgOutputValue);
+        dir.mkpath(imgOutputValue);
     }
 
     if (varName.compare(imgOutCordinatesPropertyName) == 0) {
 
         imgOutCordinatesValue = val;
         file.close();
-        file.setFileName(QCoreApplication::applicationDirPath()+"/"+imgOutCordinatesValue);
+        file.setFileName(imgOutCordinatesValue);
 
         time ( &rawtime );
         timeinfo = localtime ( &rawtime );
@@ -266,8 +281,8 @@ PluginInfo FacedetectionPlugin::getPluginInfo() const
                 "Facedetection Plugin",
                 0,
                 1,
-                "Plugin Description goes here",
-                "Plugin Creator");
+                "This plugin detects faces from a video feed",
+                "Charith Wijenayake");
     return pluginInfo;
 }
 
