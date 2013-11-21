@@ -123,6 +123,7 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
     }
 
     passingStringList.append(QString("%1").arg(faces.size()));
+    passingStringList.append(QString("%1").arg(frame_number_local));
     passingData.setStrList(passingStringList);
     //passingData.setImage(out);
     passingStringList.clear();

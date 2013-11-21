@@ -4,7 +4,7 @@
 CONFIG(debug, debug|release):    message(Debug build!)
 CONFIG(release, debug|release):    message(Release build!)
 
-QT -= gui
+QT += core gui
 
 TARGET = facedetectionPlugin
 
