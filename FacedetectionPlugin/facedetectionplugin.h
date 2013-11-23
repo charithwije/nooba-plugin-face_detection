@@ -38,6 +38,7 @@ public:
     ~FacedetectionPlugin();
 
     bool procFrame(const cv::Mat &in, cv::Mat &out, ProcParams &params);
+    bool processFrame( const cv::Mat &in);
     bool init();
     bool release();
     bool writeToFile(int,int,int,int,int);
@@ -77,6 +78,10 @@ private:
         QString imgOutCordinatesPropertyName;
         QString imgOutCordinatesValue;
         QString imgDir;
+        QString minX;
+        QString minY;
+        QString maxX;
+        QString maxY;
 
         PluginPassData passingData;
         QStringList passingStringList;
@@ -93,7 +98,8 @@ private:
 private slots:
 
        void onStringParamChanged(const QString& varName, const QString& val);
-
+       void onFilePathParamChanged(const QString &varName, const QString &val);
+       void inputData(const QStringList &strList, QList<QImage> imageList);
 
 
     /**
