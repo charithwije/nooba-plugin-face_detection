@@ -3,6 +3,7 @@
 
 #include "facedetectionplugin_global.h"
 #include "noobapluginapi.h"
+#include "blobobject.h"
 #include "package_bgs/StaticFrameDifferenceBGS.h"
 
 #include <fstream>
@@ -44,6 +45,7 @@ public:
     bool writeToFile(int,int,int,int,int);
 
     PluginInfo getPluginInfo() const;
+    QImage convertToQImage(const cv::Mat &cvImg);
 
 private:
 
@@ -52,12 +54,14 @@ private:
         std::vector<cv::Rect> faces;
         std::vector<cv::Rect> faces2;
         std::vector<cv::Rect> faces3;
+        std::vector<cv::Rect> blobrect;
 
         cv::CascadeClassifier face_cascade;
         cv::CascadeClassifier face_cascade2;
         cv::CascadeClassifier eyes_cascade;
         cv::Mat img_mask;
         cv::Mat mat1 ;
+        cv::Mat faceROI;
         StaticFrameDifferenceBGS bgs;
 
       //  QTextStream out;
@@ -86,7 +90,8 @@ private:
         PluginPassData passingData;
         QStringList passingStringList;
 
-
+        QList<blobobject*> bloblist;
+        QList<QImage> imgList;
         QFile file;
         QTextStream out;
         bool b;
@@ -94,6 +99,7 @@ private:
 
         time_t rawtime;
         struct tm * timeinfo;
+
 
 private slots:
 

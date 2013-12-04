@@ -19,9 +19,11 @@ DEFINES += FACEDETECTIONPLUGIN_LIB
 # Input
 HEADERS += facedetectionplugin.h facedetectionplugin_global.h \
     package_bgs/IBGS.h \
-    package_bgs/StaticFrameDifferenceBGS.h
+    package_bgs/StaticFrameDifferenceBGS.h \
+    blobobject.h
 SOURCES += facedetectionplugin.cpp \
-    package_bgs/StaticFrameDifferenceBGS.cpp
+    package_bgs/StaticFrameDifferenceBGS.cpp \
+    blobobject.cpp
 
 CONFIG(debug, debug|release): DESTDIR = $$PWD/../../../NoobaVSS_build/NoobaFE/Debug/plugins/
 CONFIG(release, debug|release): DESTDIR = $$PWD/../../../NoobaVSS_build/NoobaFE/Release/plugins/
