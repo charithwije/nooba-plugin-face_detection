@@ -1,3 +1,26 @@
+
+/*@file facedetectionplugin.cpp
+  @author  Charith Wijenayake <charithwije21@gmail.com>
+
+  @section LICENSE
+  Face Detection PLugin API source file
+  Copyright (C) 2013 Developed by Team Nooba
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
 #include "facedetectionplugin.h"
 #include "blobobject.h"
 #include <QtCore>
@@ -30,14 +53,9 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
     frame_number_local++;
     img_mask = in.clone();
 
-//    mat1 = cv::imread("/home/charith/Programming/FYP/Plugins/initialimg2.png",3);
+    cv::resize(in,out,cv::Size(in.cols/1,in.rows/1));
+    cv::cvtColor(out, out, CV_BGR2GRAY);
 
-    cv::cvtColor(in, out, CV_BGR2GRAY);
-
-    //cv::imshow( "face---", out );
-    // bgs.process(in,img_mask,mat1);
-    //imshow( "img mask", img_mask );
-    //  cv::waitKey(20);
     t.start();
 
     if(!b)
@@ -45,16 +63,6 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
         qDebug() << "--(!)Error loading\n" << Q_FUNC_INFO;
         return false;
     }
-//    if( !face_cascade2.load(haarFaceCascadePath))
-//    {
-//        qDebug("--(!)Error loading\n");
-//        return false;
-//    }
-
-//    if( !eyes_cascade.load(eyeCascadePath) )
-//    {
-//        qDebug("--(!)Error loading\n"); return false;
-//    }
 
 
 
@@ -62,86 +70,39 @@ bool FacedetectionPlugin::procFrame( const cv::Mat &in, cv::Mat &out, ProcParams
     //  cv::cvtColor(out, out, CV_GRAY2BGR);
 
 
-    //        //-- Detect faces
-    //face_cascade.detectMultiScale(out, faces,1.1,3,CV_HAAR_SCALE_IMAGE,cvSize(10,10),cvSize(50,50) );
-    face_cascade.detectMultiScale(out, faces,1.1,3,CV_HAAR_SCALE_IMAGE,cv::Size(20, 20));
+    //       Detect faces
 
-    //    face_cascade2.detectMultiScale( out, faces2, 1.1, 2, CV_HAAR_SCALE_IMAGE, cv::Size(10, 10), cv::Size(40, 40) );
+    face_cascade.detectMultiScale(out, faces,1.1,3,CV_HAAR_SCALE_IMAGE,cv::Size(20, 20),cvSize(50,50));
 
-    //        faces.insert( faces.end(), faces2.begin(), faces2.end() );
 
-    //        std::vector<cv::Rect>::iterator it;
-    //        it = std::unique (faces.begin(), faces.end());
-
-    //        faces.resize(std::distance(faces.begin(),it) );
     cv::cvtColor(out,out,CV_GRAY2BGR);
-   // debugMsg(QString("time spent for process  %1").arg(t.elapsed()));
 
-   // t.start();
+
     for( int i = 0; i < faces.size(); i++ )
     {
         cv::Rect face(faces[i].x ,faces[i].y, faces[i].width , faces[i].height );
-
-        // write to output text filet
 
         result = FacedetectionPlugin::writeToFile(frame_number_local,faces[i].x ,faces[i].y, faces[i].width , faces[i].height);
 
         cv::putText(out, QString("(%1,%2)").arg(faces[i].x).arg(faces[i].y).toStdString(), cv::Point(faces[i].x,faces[i].y), cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(250,255,0));
         cv::rectangle(out,face,cv::Scalar(255,255,51),2);
         faceROI = out(faces[i] );
-
         QImage passingImg=convertToQImage(faceROI);
-        imgList.append(passingImg);
-        //std::vetor<cv::Rect> eyes;
-
-        /* imshow( "face", faceROI );  // showing the cropped face
-        cv::waitKey(20);
-        cv::moveWindow("face",5,5 ); // sets the position of the cropped face
-        */
-
-        //         IplImage copy=faceROI;
-        //        IplImage* savingImg = &copy;
-
         QString s = QString(imgOutputValue+"/face_results%1.png").arg(frame_number_local);
-
-
         bool bw=  cv::imwrite(s.toStdString(),faceROI);
-
         NoobaPluginAPI::debugMsg(QString("detected face in frame %1 ,at (%2,%3)").arg(frame_number_local).arg(faces[i].x).arg(faces[i].y));
 
-//        QString params="(%1,%2)";
-//        params.arg(faces[i].x).arg(faces[i].y);
 
-
-
-        //-- In each face, detect eyes
-        //eyes_cascade.detectMultiScale( faceROI, eyes, 1.1, 2, 0 |CV_HAAR_SCALE_IMAGE, cv::Size(30, 30) );
-
-        // to mark the eyes on a face
-
-        //            for( int j = 0; j < eyes.size(); j++ )
-        //            {
-        //                cv::Point center( faces[i].x + eyes[j].x + eyes[j].width*0.5, faces[i].y + eyes[j].y + eyes[j].height*0.5 );
-        //                int radius =cvRound( (eyes[j].width + eyes[j].height)*0.25 );
-        //                cv::circle( out, center, radius, cv::Scalar( 255, 200, 0 ), 1, 8, 0 );
-        //            }
     }
-  //  debugMsg(QString("time spent for writing %1").arg(t.elapsed()));
 
+    QList<QImage> imgList;
+    imgList.append(convertToQImage(out));
 
-
-
-   // passingStringList.append(QString("%1").arg(faces.size()));
-   // passingStringList.append(QString("%1").arg(frame_number_local));
-   // passingData.setStrList(passingStringList);
     QStringList list;
     list.append(QString("%1").arg(faces.size()));
     list.append(QString("%1").arg(frame_number_local));
     outputData(list,imgList);
-  //  passingStringList.clear();
-    // outputData(passingData);
-    QImage img = convertToQImage(out);
-    updateFrameViewer("Output",img);
+
 
     return true;
 }
@@ -157,15 +118,8 @@ bool FacedetectionPlugin::processFrame(const cv::Mat &in)
     img_mask = in.clone();
 
     cv::Mat out;
-
-//    mat1 = cv::imread("/home/charith/Programming/FYP/Plugins/initialimg2.png",3);
-
     cv::cvtColor(in, out, CV_BGR2GRAY);
 
-    //cv::imshow( "face---", out );
-    // bgs.process(in,img_mask,mat1);
-    //imshow( "img mask", img_mask );
-    //  cv::waitKey(20);
     t.start();
 
     if(!b)
@@ -173,67 +127,42 @@ bool FacedetectionPlugin::processFrame(const cv::Mat &in)
         qDebug() << "--(!)Error loading\n" << Q_FUNC_INFO;
         return false;
     }
-//    if( !face_cascade2.load(haarFaceCascadePath))
-//    {
-//        qDebug("--(!)Error loading\n");
-//        return false;
-//    }
-
-//    if( !eyes_cascade.load(eyeCascadePath) )
-//    {
-//        qDebug("--(!)Error loading\n"); return false;
-//    }
-
-
-
     cv::equalizeHist( out, out );
-    //  cv::cvtColor(out, out, CV_GRAY2BGR);
-
     cv::Mat blobROI ;
 
     for(int i=0;i<FacedetectionPlugin::bloblist.size();i++){
 
-        //cv::Rect temp(bloblist.at(i)->getBlobTopLeftX() ,bloblist.at(i)->getBlobTopLeftY(),bloblist.at(i)->getBlobWidth() , bloblist.at(i)->getBlobHeight());
+
 
         cv::Rect t(bloblist.at(i)->getBlobTopLeftX(),bloblist.at(i)->getBlobTopLeftY(), bloblist.at(i)->getBlobWidth(), bloblist.at(i)->getBlobHeight());
-  //      QString t2=QString("x= %1 , y = %2, width= %3 , height = %4 ").arg(bloblist.at(i)->getBlobTopLeftX()).arg(bloblist.at(i)->getBlobTopLeftY()).arg(bloblist.at(i)->getBlobWidth()).arg(bloblist.at(i)->getBlobHeight());
-      //  QString t1=QString("rows = %1 , cols = %2 ").arg(out.rows).arg(out.cols);
-        //debugMsg(t2);
-       // debugMsg(t1);
 
-        if ((bloblist.at(i)->getBlobTopLeftX()+bloblist.at(i)->getBlobWidth()) <=704)
-        {
-            if((bloblist.at(i)->getBlobTopLeftY()+bloblist.at(i)->getBlobHeight()) <=640)
-            {
-                 blobROI = out(t);
 
-                 face_cascade.detectMultiScale(blobROI, faces,1.1);
+        //        if ((bloblist.at(i)->getBlobTopLeftX()+bloblist.at(i)->getBlobWidth()) <=704)
+        //        {
+        //            if((bloblist.at(i)->getBlobTopLeftY()+bloblist.at(i)->getBlobHeight()) <=640)
+        //            {
+        //                 blobROI = out(t);
 
-            }
-        }
-       cv::imshow("blob",blobROI);
-        //cv::waitKey(10);
+        //                 face_cascade.detectMultiScale(blobROI, faces,1.1);
+
+        //            }
+        //        }
+        //  cv::imshow("blob",blobROI);
+
+
+
+        cv::Rect blobrect(minX.toInt() ,maxY.toInt(), maxX.toInt()-minX.toInt() , maxY.toInt()-minY.toInt());
+
+
+        cv::rectangle(out,blobrect,cv::Scalar(255,255,51),2);
+        cv::Mat blobROI = out(blobrect );
+
+
+
     }
 
 
-
-
-    //        //-- Detect faces
-    //face_cascade.detectMultiScale(out, faces,1.1,3,CV_HAAR_SCALE_IMAGE,cvSize(10,10),cvSize(50,50) );
-    //face_cascade.detectMultiScale(out, faces,1.1);
-
-    //    face_cascade2.detectMultiScale( out, faces2, 1.1, 2, CV_HAAR_SCALE_IMAGE, cv::Size(10, 10), cv::Size(40, 40) );
-
-    //        faces.insert( faces.end(), faces2.begin(), faces2.end() );
-
-    //        std::vector<cv::Rect>::iterator it;
-    //        it = std::unique (faces.begin(), faces.end());
-
-    //        faces.resize(std::distance(faces.begin(),it) );
     cv::cvtColor(out,out,CV_GRAY2BGR);
-   // debugMsg(QString("time spent for process  %1").arg(t.elapsed()));
-
-   // t.start();
     for( int i = 0; i < faces.size(); i++ )
     {
         cv::Rect face(faces[i].x ,faces[i].y, faces[i].width , faces[i].height );
@@ -246,18 +175,6 @@ bool FacedetectionPlugin::processFrame(const cv::Mat &in)
         cv::rectangle(out,face,cv::Scalar(255,255,51),2);
         cv::Mat faceROI = out(faces[i] );
 
-        QImage passingImg=convertToQImage(faceROI);
-        imgList.append(passingImg);
-
-        //std::vetor<cv::Rect> eyes;
-
-        /* imshow( "face", faceROI );  // showing the cropped face
-        cv::waitKey(20);
-        cv::moveWindow("face",5,5 ); // sets the position of the cropped face
-        */
-
-        //         IplImage copy=faceROI;
-        //        IplImage* savingImg = &copy;
 
         QString s = QString(imgOutputValue+"/face_results%1.png").arg(frame_number_local);
 
@@ -266,39 +183,19 @@ bool FacedetectionPlugin::processFrame(const cv::Mat &in)
 
         NoobaPluginAPI::debugMsg(QString("detected face in frame %1 ,at (%2,%3)").arg(frame_number_local).arg(faces[i].x).arg(faces[i].y));
 
-//        QString params="(%1,%2)";
-//        params.arg(faces[i].x).arg(faces[i].y);
 
-
-
-        //-- In each face, detect eyes
-        //eyes_cascade.detectMultiScale( faceROI, eyes, 1.1, 2, 0 |CV_HAAR_SCALE_IMAGE, cv::Size(30, 30) );
-
-        // to mark the eyes on a face
-
-        //            for( int j = 0; j < eyes.size(); j++ )
-        //            {
-        //                cv::Point center( faces[i].x + eyes[j].x + eyes[j].width*0.5, faces[i].y + eyes[j].y + eyes[j].height*0.5 );
-        //                int radius =cvRound( (eyes[j].width + eyes[j].height)*0.25 );
-        //                cv::circle( out, center, radius, cv::Scalar( 255, 200, 0 ), 1, 8, 0 );
-        //            }
     }
-  //  debugMsg(QString("time spent for writing %1").arg(t.elapsed()));
 
-   // passingStringList.append(QString("%1").arg(faces.size()));
-   // passingStringList.append(QString("%1").arg(frame_number_local));
-    //passingData.setStrList(passingStringList);
 
     QStringList list;
+    QList<QImage> imgList;
+    QImage img = convertToQImage(out);
+    imgList.append(img);
     list.append(QString("%1").arg(faces.size()));
     list.append(QString("%1").arg(frame_number_local));
     outputData(list,imgList);
 
-    passingData.setImage(out);
-  //  passingStringList.clear();
-   // outputData(passingData);
-    QImage img((uchar*)out.data, out.cols, out.rows, out.step1(), QImage::Format_RGB888);
-    updateFrameViewer("Output",img);
+    updateFrameViewer("Output1",img);
 
     return true;
 
@@ -388,14 +285,13 @@ bool FacedetectionPlugin::init()
     out.setDevice(&file);
     out << "%"<<asctime(timeinfo)<<"%======= Face details (Frame number, x, y, width, height)======= \n";
 
-    createFrameViewer("Output");
+    //createFrameViewer("Output1");
 
     return true;
 }
 
 void FacedetectionPlugin::onStringParamChanged(const QString& varName, const QString& val){
 
-    //  qDebug("signal came");
 
     QDir dir(QDir::home());
     if(!dir.exists("NoobaVSS")){
@@ -409,7 +305,7 @@ void FacedetectionPlugin::onStringParamChanged(const QString& varName, const QSt
 
     if (varName.compare(imgOutputPropertyName) == 0) {
         imgOutputValue=val;
-        //dir.mkpath(imgOutputValue);
+
     }
 
     if (varName.compare(imgOutCordinatesPropertyName) == 0) {
@@ -424,7 +320,6 @@ void FacedetectionPlugin::onStringParamChanged(const QString& varName, const QSt
         file.open(QIODevice::Append | QIODevice::Text);
 
         out.setDevice(&file);
-  //  out << "%"<<asctime(timeinfo)<<"%======= Face details (Frame number, x, y, width, height)======= \n";
 
     }
 
@@ -436,7 +331,7 @@ void FacedetectionPlugin::onFilePathParamChanged(const QString &varName, const Q
 
     if (varName.compare(imgOutputPropertyName) == 0) {
         imgOutputValue=val;
-        //dir.mkpath(imgOutputValue);
+
     }
 }
 
@@ -472,11 +367,11 @@ void FacedetectionPlugin::inputData(const QStringList &strList, QList<QImage> im
 
     cv::Mat frame(imageList.at(0).height(),imageList.at(0).width(),CV_8UC3,(uchar*)imageList.at(0).bits(),imageList.at(0).bytesPerLine());
 
-int size = strList.size();
+    int size = strList.size();
 
     foreach(QString str,strList){
         //  debugMsg(str);
-       int i=0;
+        int i=0;
         QList<QString> parameters1 = str.split(" ");
         QList<QString> parameters2 = parameters1.at(1).split(",");
         minX = parameters2.at(4);
@@ -493,12 +388,13 @@ int size = strList.size();
 
         FacedetectionPlugin::bloblist.append(new blobobject(minX.toInt(),maxY.toInt(),maxX.toInt()-minX.toInt(),maxY.toInt()-minY.toInt()));
 
+        processFrame(frame);
     }
 
-    processFrame(frame);
+    // processFrame(frame);
 
     QString deb=QString("%1,%2,%3,%4").arg(minX).arg(minY).arg(maxX).arg(maxY);
-   // debugMsg(deb);
+    // debugMsg(deb);
 }
 
 

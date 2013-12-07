@@ -91,7 +91,7 @@ private:
         QStringList passingStringList;
 
         QList<blobobject*> bloblist;
-        QList<QImage> imgList;
+       // QList<QImage> imgList;
         QFile file;
         QTextStream out;
         bool b;
